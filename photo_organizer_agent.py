@@ -36,22 +36,16 @@ def encode_images_to_base64(image_path: str) -> str:
 # print(encode_images_to_base64(IMAGE_FOLDER + "/trip.jpeg"))
 
 
-prompt = """
-    You are organizing a set of photos into folders based on their visual content.
+# prompt = """
+#     You are organizing a set of photos into folders based on their visual content.
 
-    For each new image:
-    - Analyze it
-    - Respond with exaclty one short category (lowercase, underscore if needed)
-    - If this image matches any previous category you've seen in this conversation, reuse that category.
-    - Do not explain, just return the category
-"""
-base64_image = encode_images_to_base64(IMAGE_FOLDER + "/5.jpg")
-
-messages = [
-    SystemMessage("You are a photo organization assistant. Respond only with one short lowercase category, no explanation."),
-    HumanMessage(prompt)   
-]
-
+#     For each new image:
+#     - Analyze it
+#     - Respond with exactly one short category (lowercase, underscore if needed)
+#     - If this image matches any previous category you've seen in this conversation, reuse that category.
+#     - Do not explain, just return the category
+# """
+# base64_image = encode_images_to_base64(IMAGE_FOLDER + "/5.jpg")
 
 
 known_categories = {}
@@ -59,19 +53,33 @@ known_categories = {}
 for filename in os.listdir(IMAGE_FOLDER):
     if not filename.lower().endswith(('.jpg', '.jpeg', '.png')):
         continue
-    print("file name: ", filename)
+    # print("file name: ", filename)
     image_path = os.path.join(IMAGE_FOLDER, filename)
     base64_image = encode_images_to_base64(image_path)
-    print("encode image")
+    # print("encode image")
 
-    messages.append(
-        HumanMessage(content=[
+    if known_categories:
+        known_text = "\n".join([f"{k}: {v}" for k, v in known_categories.items()])
+        context_text = f"Here are the categories assigned so far:\n{known_text}\n"
+    else:
+        context_text = "No categories assigned yet. \n"
+    
+    print(context_text)
+
+    messages = [
+        SystemMessage("""
+            You are a photo classification assistant.
+            Rules:
+            - Respond ONLY with one short lowercase category (e.g. travel, family_party, pet, food... etc)
+            - Reuse existing categories if they clearly fit.
+            - Do NOT explain. Do NOT include punctuation or lists. Just output the single category name.
+    """),
+    HumanMessage(content=[
+            {"type": "text", "text": context_text + "Classify the next image:"},
             {"type": "image_url", "image_url": {"url": base64_image}},
-            {"type": "text", "text": prompt}
         ])
-    )
+    ]
 
-    print("Added message")
     ai_response = llama_model.invoke(messages)
     image_category = ai_response.content.strip()
 
