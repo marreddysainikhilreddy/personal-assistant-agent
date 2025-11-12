@@ -188,7 +188,7 @@ Contributions are welcome! This project is perfect for:
 
 MIT License - feel free to use in personal or commercial projects
 
-## 💡 Why This Project Matters
+## 💡 How this project is helpful
 
 In an era where we generate millions of photos daily, manual organization is no longer scalable. This project demonstrates:
 - **Practical AI Applications**: Real-world use of vision models beyond demos
